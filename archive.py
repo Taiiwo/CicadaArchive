@@ -98,7 +98,8 @@ class ArchiveManager(object):
                     if hash in self.tagdb["files"]:
                         # this file is already tagged
                         continue
-                    if file in self.dont_tag:
+                    print(os.path.split(root))
+                    if file in self.dont_tag or ".git" in root:
                         # blacklisted file
                         continue
 
