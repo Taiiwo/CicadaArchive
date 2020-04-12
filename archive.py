@@ -192,7 +192,7 @@ class ArchiveManager(object):
 
         for folder_name in os.path.normpath(path).split(os.sep):
             for pair in get_pairs(tag_level):
-                if folder_name.lower() == pair[1]:
+                if folder_name == pair[1]:
                     path_tag += (pair,)
 
         return path_tag
