@@ -43,7 +43,7 @@ class ArchiveManager(object):
         self.use_path_tags_exclusive = True
         self.get_tags_from_path = True
 
-        self.dont_tag = ["tagdb.json", "tags.json", "archive.py"]
+        self.dont_tag = ["tagdb.json", "tags.json", "archive.py", "README.md"]
 
         hashes = []
         # load the tag database from file
