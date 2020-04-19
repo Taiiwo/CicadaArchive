@@ -25,8 +25,7 @@
         },
         "analysis":{
             "type": {
-                "frequency": null,
-                "frequency": null,
+                "frequency": null
             }
         },
         "theory":null,
@@ -54,7 +53,7 @@
                         "image": null,
                         "video": null
                     }
-                },
+                }
             }
         },
         "archive":null
