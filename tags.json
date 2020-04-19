@@ -1,11 +1,80 @@
 {
-    "purposes":{
-        "research":null,
-        "solution":null,
-        "analysis":null,
+    "purpose":{
+        "research": {
+            "subject": {
+                "history": null,
+                "science": {
+                    "field": {
+                        "biology": null,
+                        "chemistry": null,
+                        "physics": null,
+                        "psychology": null,
+                        "mathematics": null
+                    }
+                },
+                "esoteric": null,
+                "fiction": null
+            }
+        },
+        "solution": {
+            "type": {
+                "guide": null,
+                "proof": null,
+                "attempt": null
+            }
+        },
+        "analysis":{
+            "type": {
+                "frequency": null,
+                "frequency": null,
+            }
+        },
         "theory":null,
-        "resource":null,
+        "resource": {
+            "resource-type": {
+                "tool": {
+                    "type": {
+                        "conversion": null,
+                        "library": null,
+                        "framework": null,
+                        "visualsation": null,
+                        "manipulation": null,
+                        "automation": null
+                    },
+                    "format": {
+                        "webpage": null,
+                        "GUI": null,
+                        "CLI": null
+                    }
+                },
+                "learning-material": {
+                    "medium": {
+                        "book": null,
+                        "article": null,
+                        "image": null,
+                        "video": null
+                    }
+                },
+            }
+        },
         "archive":null
+    },
+    "format":{
+        "code": {
+            "language": {
+                "python": null,
+                "C++": null,
+                "perl": null,
+                "java": null,
+                "javascript": null,
+                "C#": null,
+                "C": null
+            }
+        },
+        "document": null,
+        "spreadsheet": null,
+        "visualisation": null,
+        "image": null
     },
     "years":{
         "2012":{"puzzles": {
