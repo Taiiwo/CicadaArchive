@@ -203,7 +203,7 @@ class ArchiveManager(object):
 
         @app.route('/')
         def index():
-            return app.send_static_file('../archive.html')
+            return app.send_static_file('../static.html')
 
         # gets a list of untagged files in the archive
         @app.route('/1/get_untagged')
