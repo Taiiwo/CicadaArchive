@@ -43,7 +43,8 @@ class ArchiveManager(object):
         self.use_path_tags_exclusive = True
         self.get_tags_from_path = True
 
-        self.dont_tag = ["tagdb.json", "tags.json", "archive.py", "README.md"]
+        self.bl_files = ["tagdb.json", "tags.json", "archive.py", "README.md"]
+        self.bl_dirs = [".git",]
 
         hashes = []
         # load the tag database from file
@@ -76,6 +77,27 @@ class ArchiveManager(object):
     def help(self):
         self.parser.print_help()
 
+    def _is_blacklisted(self, path:str):
+        path = os.path.split(path)
+        # file is blacklisted
+        if path[-1] in self.bl_files:
+            return True
+        # folder is blacklisted
+        elif any([x in self.bl_dirs for x in path[:-1]]):
+            return True
+        # filename starts with a .
+        elif path[-1][0] == ".":
+            return True
+        return False
+
+    def _is_tagged(self, path:str):
+        hash = self._hash_file(path)
+
+        # merge the old tags with the new one (in case the file has moved or tags )
+        if hash in self.tagdb["files"]:
+            return True
+        return False
+
     def autotag(self):
         parser = argparse.ArgumentParser(description="Wizard for tagging new files")
         parser.add_argument(
@@ -89,20 +111,16 @@ class ArchiveManager(object):
         hashes = []
         # iterate all the files, adding automatic tags where possible
         for path in paths:
-            for root, dirs, files in os.walk(path):
-                for file in files:
-                    hash = self._hash_file(os.path.join(root, file))
-                    # store the current hashes for later (used to determine removed files)
-                    hashes.append(hash)
-                    # merge the old tags with the new one (in case the file has moved or tags )
-                    if hash in self.tagdb["files"]:
-                        # this file is already tagged
-                        continue
-                    if file in self.dont_tag or ".git" in root:
-                        # blacklisted file
-                        continue
+            # merge the old tags with the new one (in case the file has moved or tags )
+            for root, file in self._get_files(path=path):
+                filepath = os.path.join(root, file)
+                if self._is_tagged(filepath):
+                    continue
 
-                    file_tags = self._tag_file(os.path.join(root, file), hash)
+                # store the current hashes for later (used to determine removed files)
+                hashes.append(hash)
+
+                file_tags = self._tag_file(os.path.join(root, file), hash)
 
     def tag(self):
         parser = argparse.ArgumentParser(
@@ -168,6 +186,55 @@ class ArchiveManager(object):
             del self.tagdb["files"][self._hash_file(file)]
             self._commit_tags()
         print("The requested files have been untagged")
+
+    def webserver(self):
+        parser = argparse.ArgumentParser(
+            description="Starts a flask webserver for GUI tagging and searching"
+        )
+        parser.add_argument(
+            "--host", metavar="h", type=str, help="Host for the local webserver", default="localhost"
+        )
+        parser.add_argument(
+            "--port", metavar="p", type=int, help="Port for the local webserver", default="8080"
+        )
+        args = parser.parse_args(sys.argv[2:])
+        from flask import Flask
+        app = Flask(__name__)
+
+        @app.route('/')
+        def index():
+            return app.send_static_file('../archive.html')
+
+        # gets a list of untagged files in the archive
+        @app.route('/1/get_untagged')
+        def get_untagged():
+            untagged_files = []
+            # for all the files in the archive
+            for root, file in self._get_files():
+                # check if the file is tagged
+                filepath = os.path.join(root, file)
+                if self._is_tagged(filepath):
+                    continue
+                untagged_files.append(filepath)
+
+            return json.dumps(untagged_files)
+
+        # tags a file
+        @app.route('/1/tag_file')
+        def tag_file():
+            pass
+
+        @app.route('/1/search_files')
+        def search_files():
+            pass
+
+        app.run(host=args.host, port=args.port)
+
+    def _get_files(self, path="."):
+        for root, files, directories in os.walk(path):
+            for file in files:
+                if not self._is_blacklisted(os.path.join(root, file)):
+                    yield root, file
 
     def _commit_tags(self):
         with open("tagdb.json", "w") as tagdb_file:
