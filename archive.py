@@ -43,8 +43,14 @@ class ArchiveManager(object):
         self.use_path_tags_exclusive = True
         self.get_tags_from_path = True
 
-        self.bl_files = ["tagdb.json", "tags.json", "archive.py", "README.md"]
-        self.bl_dirs = [".git",]
+        self.bl_files = [
+            "tagdb.json",
+            "tags.json",
+            "archive.py",
+            "README.md",
+            "static.html",
+        ]
+        self.bl_dirs = [".git"]
 
         hashes = []
         # load the tag database from file
@@ -77,8 +83,8 @@ class ArchiveManager(object):
     def help(self):
         self.parser.print_help()
 
-    def _is_blacklisted(self, path:str):
-        path = os.path.split(path)
+    def _is_blacklisted(self, path: str):
+        path = os.path.normpath(path).split(os.path.sep)
         # file is blacklisted
         if path[-1] in self.bl_files:
             return True
