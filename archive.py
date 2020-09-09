@@ -96,7 +96,7 @@ class ArchiveManager(object):
             return True
         return False
 
-    def _is_tagged(self, path:str):
+    def _is_tagged(self, path: str):
         hash = self._hash_file(path)
 
         # merge the old tags with the new one (in case the file has moved or tags )
@@ -198,21 +198,30 @@ class ArchiveManager(object):
             description="Starts a flask webserver for GUI tagging and searching"
         )
         parser.add_argument(
-            "--host", metavar="h", type=str, help="Host for the local webserver", default="localhost"
+            "--host",
+            metavar="h",
+            type=str,
+            help="Host for the local webserver",
+            default="localhost",
         )
         parser.add_argument(
-            "--port", metavar="p", type=int, help="Port for the local webserver", default="8080"
+            "--port",
+            metavar="p",
+            type=int,
+            help="Port for the local webserver",
+            default="8080",
         )
         args = parser.parse_args(sys.argv[2:])
         from flask import Flask
-        app = Flask(__name__)
 
-        @app.route('/')
+        app = Flask(__name__, static_url_path="", static_folder=".")
+
+        @app.route("/")
         def index():
-            return app.send_static_file('../static.html')
+            return app.send_static_file("static.html")
 
         # gets a list of untagged files in the archive
-        @app.route('/1/get_untagged')
+        @app.route("/1/get_untagged")
         def get_untagged():
             untagged_files = []
             # for all the files in the archive
@@ -221,23 +230,28 @@ class ArchiveManager(object):
                 filepath = os.path.join(root, file)
                 if self._is_tagged(filepath):
                     continue
-                untagged_files.append(filepath)
+                untagged_files.append(
+                    {
+                        "path": os.path.normpath(filepath),
+                        "tags": self._get_path_tags(filepath),
+                    }
+                )
 
             return json.dumps(untagged_files)
 
         # tags a file
-        @app.route('/1/tag_file')
+        @app.route("/1/tag_file")
         def tag_file():
             pass
 
-        @app.route('/1/search_files')
+        @app.route("/1/search_files")
         def search_files():
             pass
 
-        app.run(host=args.host, port=args.port)
+        app.run(host=args.host, port=args.port, debug=True)
 
     def _get_files(self, path="."):
-        for root, files, directories in os.walk(path):
+        for root, directories, files in os.walk(path):
             for file in files:
                 if not self._is_blacklisted(os.path.join(root, file)):
                     yield root, file
@@ -284,7 +298,6 @@ class ArchiveManager(object):
         return hasher.hexdigest()
 
     def _tag_file(self, filepath, hash):
-        print(filepath)
         # request tags
         tags = self._request_tags(pretags=self._get_path_tags(filepath))
         # commit changes to tagdb
@@ -332,7 +345,7 @@ class ArchiveManager(object):
                 )
                 print("\nCurrent path: " + curpath)
                 print("Please select one or more %s" % tag)
-                #print(tags[tag], tag)
+                # print(tags[tag], tag)
                 tag_chips = [
                     "[%s:%s]" % (i + 1, key) for i, key in enumerate(tags[tag])
                 ]
@@ -374,7 +387,7 @@ class ArchiveManager(object):
                         ret_tags += tmp_tags[0]
                 else:
                     ret_tags.append(path + [tag1, tag2])
-                #print("ret_tags: ", ret_tags)
+                # print("ret_tags: ", ret_tags)
         return ret_tags
 
         input("Press [ENTER] to exit...")
