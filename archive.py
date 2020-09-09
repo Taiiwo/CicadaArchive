@@ -248,25 +248,28 @@ class ArchiveManager(object):
 
     # automatically suggest tags
     def _get_path_tags(self, path):
-        path_tag = tuple()
+        path_tag = []
         # auto add tag path for the directory it's in
         tag_level = self.tags.copy()
 
-        def get_pairs(d):
+        def get_pairs(d, path=[]):
             if not d:
                 return False
             for parent in d:
                 if isinstance(d[parent], dict):
                     for child in d[parent]:
-                        p = get_pairs(d[parent][child])
+                        p = get_pairs(d[parent][child], path=path + [parent, child])
                         if p:
                             yield from p
-                        yield (parent, child)
+                        yield (parent, child), path + [parent, child]
 
         for folder_name in os.path.normpath(path).split(os.sep):
-            for pair in get_pairs(tag_level):
+            for pair, path in get_pairs(tag_level):
                 if folder_name == pair[1]:
-                    path_tag += (pair,)
+                    if path[:-2] in path_tag:
+                        path_tag.remove(path[:-2])
+                    path_tag.append(path)
+                    break
 
         return path_tag
 
